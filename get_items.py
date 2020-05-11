@@ -2,6 +2,8 @@ import json
 import re
 from datetime import datetime
 from time import sleep
+from urllib.parse import urljoin
+
 from furl import furl
 import xxhash
 from bs4 import BeautifulSoup
@@ -58,7 +60,8 @@ def get_page(session, url):
     if date != datetime.now().strftime('%Y%m') and p.is_file():
         return p.open().read()
 
-    print(f'👾 downloading: {url}')
+    print(f'{datetime.now().isoformat()[:-7]} - 👾 downloading {url}')
+
     sleep(5)
     response = session.get(url)
     raw = response.text
@@ -95,7 +98,9 @@ def get_lines(session, url):
                         r = r"</h3><ans>\1</ans><remqq"
                         line = re.sub(s, r, line)
                     else:
-                        s = r"</h3>(.+?)<"
+                        s = r"</h3>(.+?)</item"
+                        # s = r"</h3>(.+?)<" # <-- Works, kindof
+                        # s = r"</h3>(.+?)<[^(a)(/a)]"
                         r = r"</h3><ans>\1</ans><"
                         line = re.sub(s, r, line)
 
@@ -152,11 +157,10 @@ def parse_item(line):
     if date_str is None:
         return
     date_str = date_str.text
-    # https://billwurtz.com/questions/questions-2016-05.html
+
+    # one broken date here: https://billwurtz.com/questions/questions-2016-05.html
     if 'apm' in date_str:
         date_str = date_str.replace('apm', 'pm ')
-
-        print(f'💥\n{line}')
         with open("borken_lines.txt", "a+") as file:
             file.write(f'{line}\n')
 
@@ -165,22 +169,39 @@ def parse_item(line):
     date = parse(date_str)
     questions = soup.find_all('qco')
     answers = soup.find_all('ans')
-
+    link = f'https://billwurtz.com/questions/q.php?date={date.strftime("%Y%m%d%H%M")}'
     item = {
         'd': date.isoformat(),
         'qs': len(questions),
-        'l': f'https://billwurtz.com/questions/q.php?date={date.strftime("%Y%m%d%H%M")}',
-        'h': xxhash.xxh64(line).hexdigest(),
+        'l': link,
+        # 'h': xxhash.xxh64(line).hexdigest(),
         'q': [],
     }
     for i in range(len(questions)):
         try:
+            q = questions[i].__repr__()[6:-6]
+            a = answers[i].__repr__()[6:-6].strip()
+
+            # absolutify links
+            base_url = 'https://billwurtz.com/questions/'
+            for l in answers[i].find_all('a'):
+                absolute_link = urljoin(base_url, l.attrs['href'])
+                l.attrs['href'] = absolute_link
+                a = answers[i].__repr__()[6:-6].strip()
+
+            for l in questions[i].find_all('a'):
+                absolute_link = urljoin(base_url, l.attrs['href'])
+                l.attrs['href'] = absolute_link
+                q = questions[i].__repr__()[6:-6].strip()
+
+
+
             item['q'].append({
-                'q': questions[i].__repr__()[6:-6],
-                'a': answers[i].__repr__()[6:-6].strip(),
+                'q': q,
+                'a': a,
             })
         except:
-            print(f'💥\n{line}')
+            # print(f'💥\n{line}')
             with open("borken_lines.txt", "a+") as file:
                 file.write(f'{line}\n')
     return item
@@ -191,6 +212,7 @@ if __name__ == '__main__':
     s = HTMLSession()
 
     all_items = []
+    open('borken_lines.txt', 'w').close()
 
     for url in all_urls():
         date = extract_date_from_url(url)
@@ -200,9 +222,9 @@ if __name__ == '__main__':
         all_items.extend(items)
 
         Path(f'ueqstions/{date}.json').write_text(json.dumps(items, indent=2, sort_keys=True, ensure_ascii=False))
-        print(f'{datetime.now().isoformat()[:-7]} - {len(items)}/{len(all_items)} - {url}')
+        print(f'{datetime.now().isoformat()[:-7]} - 👌 {len(items)}/{len(all_items)} - {url}')
 
     Path(f'ueqstions.json').write_text(json.dumps(all_items, indent=2, sort_keys=True, ensure_ascii=False))
-    print('💾 saved file to disk')
+    print(f'{datetime.now().isoformat()[:-7]} - 💾 saved file to disk')
 
 # broken from 2017-03
