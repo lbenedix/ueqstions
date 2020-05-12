@@ -97,6 +97,10 @@ def get_lines(session, url):
                         s = r"</h3>(.+?)<remqq"
                         r = r"</h3><ans>\1</ans><remqq"
                         line = re.sub(s, r, line)
+                    elif line.count('<qco>') > 1:
+                        s = r"</h3>(.+?)<" # <-- Works, kindof
+                        r = r"</h3><ans>\1</ans><"
+                        line = re.sub(s, r, line)
                     else:
                         s = r"</h3>(.+?)</item"
                         # s = r"</h3>(.+?)<" # <-- Works, kindof
@@ -172,14 +176,14 @@ def parse_item(line):
     link = f'https://billwurtz.com/questions/q.php?date={date.strftime("%Y%m%d%H%M")}'
     item = {
         'd': date.isoformat(),
-        'qs': len(questions),
         'l': link,
-        # 'h': xxhash.xxh64(line).hexdigest(),
         'q': [],
+        # 'qs': len(questions),
+        'h': xxhash.xxh64(line).hexdigest(),
     }
     for i in range(len(questions)):
         try:
-            q = questions[i].__repr__()[6:-6]
+            q = questions[i].__repr__()[6:-6].strip()
             a = answers[i].__repr__()[6:-6].strip()
 
             # absolutify links
@@ -193,8 +197,6 @@ def parse_item(line):
                 absolute_link = urljoin(base_url, l.attrs['href'])
                 l.attrs['href'] = absolute_link
                 q = questions[i].__repr__()[6:-6].strip()
-
-
 
             item['q'].append({
                 'q': q,
@@ -220,11 +222,12 @@ if __name__ == '__main__':
         lines = list(get_lines(s, url))
         items = list(map(parse_item, lines))
         all_items.extend(items)
+        all_items = list(filter(None, all_items))
 
-        Path(f'ueqstions/{date}.json').write_text(json.dumps(items, indent=2, sort_keys=True, ensure_ascii=False))
+        Path(f'ueqstions/json/{date}.json').write_text(json.dumps(items, indent=2, sort_keys=True, ensure_ascii=False))
         print(f'{datetime.now().isoformat()[:-7]} - 👌 {len(items)}/{len(all_items)} - {url}')
 
-    Path(f'ueqstions.json').write_text(json.dumps(all_items, indent=2, sort_keys=True, ensure_ascii=False))
+    Path(f'ueqstions.json').write_text(json.dumps(all_items))
     print(f'{datetime.now().isoformat()[:-7]} - 💾 saved file to disk')
 
 # broken from 2017-03

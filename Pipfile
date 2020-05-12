@@ -13,6 +13,7 @@ html5lib = "*"
 python-dateutil = "*"
 xxhash = "*"
 furl = "*"
+msgpack = "*"
 
 [requires]
 python_version = "3.7"

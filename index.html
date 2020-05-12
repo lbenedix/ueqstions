@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel=icon href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">👾</text></svg>'>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="reset.css"/>
+
+    <style>
+        body {
+            padding: 1em;
+        }
+
+        ul {
+            margin-top: 1em;
+        }
+
+        li {
+            margin-bottom: 1em;
+        }
+
+        li * {
+            margin: 0.25em 0;
+        }
+
+        .d {
+
+        }
+
+        .q {
+            margin-left: 0.5em;
+            font-weight: bold;
+        }
+
+        .a {
+            margin-left: 0.5em;
+        }
+
+        .content {
+            display: none;
+        }
+
+    </style>
+
+    <style>
+        .wordart {
+            font-family: Arial, sans-serif;
+            font-size: 4em;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+
+        }
+
+        .wordart.rainbow {
+            transform: scale(1, 1.5);
+            -webkit-transform: scale(1, 1.5);
+            -moz-transform: scale(1, 1.5);
+            -o-transform: scale(1, 1.5);
+            -ms-transform: scale(1, 1.5);
+        }
+
+        .wordart.rainbow .text {
+            background: red;
+            background: -webkit-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+            background: -o-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+            background: -moz-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+            background: linear-gradient(to right, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="spinner wordart rainbow">
+    <span class="text">Wait for it...</span>
+</div>
+
+<div class="content">
+    <input type="text">
+    <button id="q">search</button>
+    <ul>
+        <!-- items go here -->
+    </ul>
+
+    <template>
+        <li>
+            <div class="d"><a href="https://billwurtz.com/questions/q.php?date=202005080235">2020-05-08T02:35:00</a></div>
+            <div class="q">What is your opinion on trees?</div>
+            <div class="a">brocolli, for huge people</div>
+        </li>
+
+    </template>
+</div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elasticlunr/0.9.6/elasticlunr.min.js" integrity="sha256-704RwVex4uiXgtML1yby1f94NOpeJq0CR0Ml+LHxJsk=" crossorigin="anonymous"></script>
+<script>
+    var index = elasticlunr(function () {
+        this.addField('q');
+        this.addField('a');
+        this.setRef('id');
+    });
+
+    fetch('ueqstions.json')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(element => {
+                element.q.forEach(q => {
+                    let doc = {
+                        "id": element.h,
+                        "q": q.q,
+                        "a": q.a,
+                        "l": element.l,
+                        "d": element.d,
+                    }
+                    index.addDoc(doc);
+                });
+            });
+
+            let template = document.querySelector('template');
+
+            console.log('finished indexing');
+            document.querySelector('.content').style.display = 'block';
+            document.querySelector('.spinner').style.display = 'none';
+
+            document.querySelector('button').addEventListener("click", function (e) {
+                // reset list
+                document.querySelector('ul').innerHTML = '';
+
+                // query index
+                let term = document.querySelector('input').value;
+                let results = index.search(term);
+
+                // render items
+                results.forEach(element => {
+                    let clone = template.content.cloneNode(true);
+                    clone.querySelector('.d a').textContent = element.doc.d;
+                    clone.querySelector('.d a').href = element.doc.l;
+
+                    clone.querySelector('.q').textContent = element.doc.q;
+                    clone.querySelector('.a').textContent = element.doc.a;
+                    document.querySelector('ul').appendChild(clone);
+                });
+
+            });
+        });
+
+</script>
+</html>
