@@ -158,8 +158,8 @@
                     clone.querySelector('.d a').textContent = element.doc.d;
                     clone.querySelector('.d a').href = element.doc.l;
 
-                    clone.querySelector('.q').textContent = element.doc.q;
-                    clone.querySelector('.a').textContent = element.doc.a;
+                    clone.querySelector('.q').innerHTML = element.doc.q;
+                    clone.querySelector('.a').innerHTML = element.doc.a;
                     document.querySelector('ul').appendChild(clone);
                 });
 
