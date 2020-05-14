@@ -170,7 +170,12 @@ def parse_item(line):
 
     if date_str == '4.22.2011:07 am':
         date_str = '4.22.20 11:07 am'
+
+    if '5.12.20' in date_str and '10:25 pm' in date_str:
+        date_str = '5.12.20 10:25pm'
+
     date = parse(date_str)
+
     questions = soup.find_all('qco')
     answers = soup.find_all('ans')
     link = f'https://billwurtz.com/questions/q.php?date={date.strftime("%Y%m%d%H%M")}'
