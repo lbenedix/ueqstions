@@ -31,10 +31,6 @@ def extract_date_from_url(url):
     """
     >>> extract_date_from_url("https://billwurtz.com/questions/questions-2016-05.html")
     201605
-
-    >>> extract_date_from_url("https://billwurtz.com/questions/questions.html")
-    202005
-
     """
     try:
         date = int(''.join(str(furl(url)).split('/')[-1].split('-', 1)[-1].split('.')[0].split('-')))
@@ -45,9 +41,10 @@ def extract_date_from_url(url):
 
 
 def all_urls():
-    all_urls = ['https://billwurtz.com/questions/questions.html']
+    all_urls = []
 
-    for d in reversed(list(dates(201605, 202004))):
+    last_month = int(datetime.now().strftime('%Y%m'))
+    for d in reversed(list(dates(201605, last_month))):
         all_urls.append(f'https://billwurtz.com/questions/questions-{d}.html')
 
     return all_urls
