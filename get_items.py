@@ -1,9 +1,11 @@
 import json
 import re
 from datetime import datetime
+from functools import lru_cache
 from time import sleep
 from urllib.parse import urljoin
 
+from dateutil.relativedelta import *
 from furl import furl
 import xxhash
 from bs4 import BeautifulSoup
@@ -27,6 +29,7 @@ def dates(start, end):
                 yield '{}-{:02d}'.format(y, m)
 
 
+@lru_cache(maxsize=999)
 def extract_date_from_url(url):
     """
     >>> extract_date_from_url("https://billwurtz.com/questions/questions-2016-05.html")
@@ -41,9 +44,11 @@ def extract_date_from_url(url):
 
 
 def all_urls():
-    all_urls = []
+    all_urls = ['https://billwurtz.com/questions/questions.html']
 
-    last_month = int(datetime.now().strftime('%Y%m'))
+    month = datetime.now()
+    month += relativedelta(months=-1)
+    last_month = int(month.strftime('%Y%m'))
     for d in reversed(list(dates(201605, last_month))):
         all_urls.append(f'https://billwurtz.com/questions/questions-{d}.html')
 
