@@ -85,6 +85,8 @@ def get_lines(session, url):
 
             x = x.replace('&nbsp;', ' ')
             x = x.replace('&sp;', ' ')
+            x = x.replace('&nsp;', ' ')
+            x = x.replace('&nb\bsp;', ' ')
             x = x.replace('</br>', '')
 
             # skip empty lines
