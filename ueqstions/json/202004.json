@@ -16570,11 +16570,11 @@
   },
   {
     "d": "2020-04-16T21:12:00",
-    "h": "c3b5a824271d4022",
+    "h": "5ac6b54665c6c78d",
     "l": "https://billwurtz.com/questions/q.php?date=202004162112",
     "q": [
       {
-        "a": "<a href=\"https://www.google.com/maps/place/Zeeland,+Netherlands/@51.478091,3.2584214,9z\" target=\"_blank\">here</a>",
+        "a": "<a href=\"https://www.google.com/maps/place/Zeeland,+Netherlands/@51.478091,3.2584214,9z/data=!4m5!3m4!1s0x47c459a7b1a4fcc9:0x2a44511b76e2a1b7!8m2!3d51.4940309!4d3.8496815\" target=\"_blank\">here</a>",
         "q": "wheres old zealand"
       }
     ]
